@@ -26,23 +26,14 @@ public class TextCell: UICollectionViewCell {
         backgroundColor = UIColor.orange
         contentView.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
+        
+        let constraints = [
             label.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             label.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
             label.topAnchor.constraint(equalTo: contentView.layoutMarginsGuide.topAnchor),
             label.bottomAnchor.constraint(equalTo: contentView.layoutMarginsGuide.bottomAnchor)
-        ])
-        label.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
-        label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        ]
+        constraints.forEach({ $0.priority = .defaultLow })
+        NSLayoutConstraint.activate(constraints)
     }
-    
-    public override var intrinsicContentSize: CGSize {
-        return super.intrinsicContentSize
-    }
-
-    public override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
-        let attribute = super.preferredLayoutAttributesFitting(layoutAttributes)
-        return attribute
-    }
-    
 }

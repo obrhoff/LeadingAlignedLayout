@@ -10,7 +10,7 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    let totalCells = 150
+    let totalCells = 0
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: LeadingAlignedLayout())
 
     override func viewDidLoad() {
@@ -31,7 +31,7 @@ class ViewController: UIViewController {
     }
 
     lazy private var values: [String] = {
-        return (0...255).map {
+        return (0...1000).map {
             _ in
             switch arc4random_uniform(3) {
             case 0: return "Hello"
@@ -45,16 +45,16 @@ class ViewController: UIViewController {
 
 extension ViewController : UICollectionViewDataSource {
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 5
+        return 1
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return totalCells
+        return 1000
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! TextCell
-        cell.label.text = values[indexPath.item]
+        cell.label.text = values[indexPath.row]
         return cell
     }
 }
