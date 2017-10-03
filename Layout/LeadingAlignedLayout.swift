@@ -13,11 +13,6 @@ class LeadingAlignedLayout : UICollectionViewLayout {
     
     private var cache = [IndexPath : UICollectionViewLayoutAttributes]()
     
-    public override func prepare() {
-        super.prepare()
-        calculateAttributes(preferredAttributes: nil)
-    }
-    
     private func calculateAttributes(preferredAttributes: UICollectionViewLayoutAttributes?) {
         
         guard let collectionView = collectionView, collectionView.bounds.isEmpty == false else {
@@ -34,7 +29,11 @@ class LeadingAlignedLayout : UICollectionViewLayout {
             let rows = collectionView.numberOfItems(inSection: sectionIndex)
             for rowIndex in 0..<rows {
                 let currentPath = IndexPath(row: rowIndex, section: sectionIndex)
-                let attributes = cache[currentPath] ?? UICollectionViewLayoutAttributes(forCellWith: currentPath)
+                let cachedAttribute =  cache[currentPath]
+                let attributes = cachedAttribute ?? UICollectionViewLayoutAttributes(forCellWith: currentPath)
+                if (cachedAttribute == nil) {
+                    cache[currentPath] = attributes
+                }
                 
                 defer {
                     lastAttribute = attributes
@@ -43,26 +42,20 @@ class LeadingAlignedLayout : UICollectionViewLayout {
                 if let sizedPath = preferredAttributes?.indexPath, sizedPath.compare(currentPath) == .orderedDescending {
                     continue
                 }
-                
                 let lastFrame = lastAttribute?.frame ?? .zero
-                var nextLeftFrame = lastFrame.offsetBy(dx: lastFrame.width + spacing, dy: 0)
-                var nextBellowFrame = CGRect(x: minX, y: lastFrame.maxY + spacing, width: 0, height: 0)
-                
-                let size = preferredAttributes?.size ?? attributes.size
-                nextBellowFrame.size = size
-                nextLeftFrame.size = size
-                
-                let finalFrame = maxX > nextLeftFrame.maxX ? nextLeftFrame : nextBellowFrame
-                attributes.frame = finalFrame
-                cache[currentPath] = attributes
+                var nextFrame = lastFrame.offsetBy(dx: lastFrame.width + spacing, dy: 0)
+                nextFrame.size = preferredAttributes?.size ?? attributes.size
+                if (maxX < nextFrame.maxX) {
+                    nextFrame.origin = CGPoint(x: minX, y: lastFrame.maxY + spacing)
+                }
+                attributes.frame = nextFrame
             }
         }
     }
     
     
     public override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let attribute = cache[indexPath]
-        return attribute
+        return cache[indexPath]
     }
     
     public override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
@@ -74,7 +67,7 @@ class LeadingAlignedLayout : UICollectionViewLayout {
     
     open override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
                                               withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
-        return true
+        return !(cache[originalAttributes.indexPath]?.size == preferredAttributes.size)
     }
     
     override  func invalidationContext(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
@@ -84,8 +77,7 @@ class LeadingAlignedLayout : UICollectionViewLayout {
         
         let oldContentSize = collectionViewContentSize
         let invalidPaths = cache.keys.filter({
-            ($0.section > originalAttributes.indexPath.section) ||
-            ($0.section == originalAttributes.indexPath.section && $0.row >= originalAttributes.indexPath.row)
+            originalAttributes.indexPath.compare($0) == .orderedAscending
         })
 
         calculateAttributes(preferredAttributes: preferredAttributes)
@@ -97,11 +89,11 @@ class LeadingAlignedLayout : UICollectionViewLayout {
     }
     
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-        let invalidate = !(newBounds.width == collectionView?.bounds.width)
-        return invalidate
+        return !(newBounds.width == collectionView?.bounds.width)
     }
     
     override func invalidateLayout() {
+        calculateAttributes(preferredAttributes: nil)
         super.invalidateLayout()
     }
     

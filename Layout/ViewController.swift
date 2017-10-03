@@ -31,7 +31,7 @@ class ViewController: UIViewController {
     }
 
     lazy private var values: [String] = {
-        return (0...1000).map {
+        return (0...255).map {
             _ in
             switch arc4random_uniform(3) {
             case 0: return "Hello"
@@ -45,11 +45,11 @@ class ViewController: UIViewController {
 
 extension ViewController : UICollectionViewDataSource {
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
+        return 5
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1000
+        return 255
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
